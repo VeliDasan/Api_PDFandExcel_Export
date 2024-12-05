@@ -5,7 +5,7 @@ import '../models/album.dart';
 class AlbumRepository {
   Future<List<Album>> fetchAlbum() async {
     final response =
-        await http.get(Uri.parse('https://reqres.in/api/users?page=2'));
+        await http.get(Uri.parse('https://reqres.in/api/users?page=1'));
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonResponse =

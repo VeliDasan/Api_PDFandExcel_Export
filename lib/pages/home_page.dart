@@ -1,10 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../models/album.dart';
 import '../repository/file_repository.dart';
 import '../repository/user_repository.dart';
-
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -34,19 +32,22 @@ class _HomePageState extends State<HomePage> {
           FutureBuilder<List<Album>>(
             future: futureAlbum,
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+              if (snapshot.connectionState == ConnectionState.done &&
+                  snapshot.hasData) {
                 return Row(
                   children: [
                     IconButton(
-                        onPressed: () => fileRepository.generatePDF(snapshot.data!),
+                        onPressed: () =>
+                            fileRepository.generatePDF(snapshot.data!),
                         icon: Icon(Icons.picture_as_pdf)),
                     IconButton(
-                        onPressed: () => fileRepository.generateExcel(snapshot.data!),
+                        onPressed: () =>
+                            fileRepository.generateExcel(snapshot.data!),
                         icon: Icon(Icons.file_download)),
                   ],
                 );
               } else {
-                return SizedBox.shrink();
+                return const SizedBox.shrink();
               }
             },
           ),
@@ -64,10 +65,47 @@ class _HomePageState extends State<HomePage> {
                   columns: [
                     GridColumn(columnName: 'id', label: Text('id')),
                     GridColumn(columnName: 'email', label: Text('email')),
-                    GridColumn(columnName: 'firstName', label: Text('firstName')),
+                    GridColumn(
+                        columnName: 'firstName', label: Text('firstName')),
                     GridColumn(columnName: 'lastName', label: Text('lastName')),
                     GridColumn(columnName: 'avatar', label: Text('avatar')),
                   ],
+                  stackedHeaderRows: [
+                    StackedHeaderRow(cells: [
+                      StackedHeaderCell(
+                        columnNames: ['id', 'email'],
+                        child: Container(
+                          alignment: Alignment.center,
+                          color: Colors.grey.shade400,
+                          child: const Text('User Info'),
+                        ),
+                      ),
+                      StackedHeaderCell(
+                        columnNames: ['firstName', 'lastName', 'avatar'],
+                        child: Container(
+                          alignment: Alignment.center,
+                          color: Colors.grey.shade400,
+                          child: const Text('Personal Info'),
+                        ),
+                      ),
+                    ]),
+                  ],
+                  tableSummaryRows: [
+                    GridTableSummaryRow(
+                      showSummaryInRow: true,
+                      title: 'Total Employees: {Count}',
+                      columns: [
+                        const GridSummaryColumn(
+                          name: 'Count',
+                          columnName: 'id',
+                          summaryType: GridSummaryType.count,
+                        ),
+                      ],
+                      position: GridTableSummaryRowPosition.bottom,
+                    ),
+                  ],
+                  gridLinesVisibility: GridLinesVisibility.both,
+                  headerGridLinesVisibility: GridLinesVisibility.both,
                 );
               } else if (snapshot.hasError) {
                 return Text('Bir hata oluştu: ${snapshot.error}');
@@ -87,8 +125,10 @@ class AlbumDataSource extends DataGridSource {
         .map<DataGridRow>((album) => DataGridRow(cells: [
       DataGridCell<int>(columnName: 'id', value: album.id),
       DataGridCell<String>(columnName: 'email', value: album.email),
-      DataGridCell<String>(columnName: 'firstName', value: album.firstName),
-      DataGridCell<String>(columnName: 'lastName', value: album.lastName),
+      DataGridCell<String>(
+          columnName: 'firstName', value: album.firstName),
+      DataGridCell<String>(
+          columnName: 'lastName', value: album.lastName),
       DataGridCell<String>(columnName: 'avatar', value: album.avatar),
     ]))
         .toList();
@@ -101,12 +141,48 @@ class AlbumDataSource extends DataGridSource {
 
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
-    return DataGridRowAdapter(cells: row.getCells().map<Widget>((dataGridCell) {
-      return Container(
-        padding: EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        child: Text(dataGridCell.value.toString()),
-      );
-    }).toList());
+    return DataGridRowAdapter(
+      cells: row.getCells().map<Widget>((dataGridCell) {
+        if (dataGridCell.columnName == 'avatar') {
+          return Container(
+            padding: const EdgeInsets.all(8.0),
+            alignment: Alignment.center,
+            child: Image.network(
+              dataGridCell.value,
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'assets/error_icon.png',
+                  width: 20,
+                  height: 20,
+                );
+              },
+            ),
+          );
+        } else {
+          return Container(
+            padding: const EdgeInsets.all(8.0),
+            alignment: Alignment.center,
+            child: Text(dataGridCell.value.toString()),
+          );
+        }
+      }).toList(),
+    );
+  }
+
+  @override
+  Widget? buildTableSummaryCellWidget(
+      GridTableSummaryRow summaryRow,
+      GridSummaryColumn? summaryColumn,
+      RowColumnIndex rowColumnIndex,
+      String summaryValue) {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      alignment: Alignment.centerRight,
+      child: Text(summaryValue,
+          style: const TextStyle(fontWeight: FontWeight.bold)),
+    );
   }
 }

@@ -19,7 +19,7 @@ class Album {
       email: json['email'] as String,
       firstName: json['first_name'] as String,
       lastName: json['last_name'] as String,
-      avatar: json['avatar'] as String,
+      avatar: "json['avatar'] as String",
     );
   }
 }
